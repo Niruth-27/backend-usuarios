@@ -9,14 +9,13 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json());
 
-// 🔥 CONEXIÓN CORRECTA A MONGODB ATLAS
-const MONGO_URI = "mongodb+srv://Niruth:InKVfcKjFJ77p2Ko@micluster.f7bmbnx.mongodb.net/miapp?retryWrites=true&w=majority&appName=miCluster";
+// Conexión a MongoDB usando la variable de entorno de Railway
+const MONGO_URI = process.env.MONGO_URI;
 
-
-// Conectar a MongoDB Atlas
 mongoose.connect(MONGO_URI)
-  .then(() => console.log("✅ Conectado a MongoDB Atlas"))
+  .then(() => console.log("✅ Conectado a MongoDB en Railway"))
   .catch(err => console.error("❌ Error al conectar a MongoDB:", err));
+
 
 // Importar el modelo
 const Usuario = require("./models/usuario");
