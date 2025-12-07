@@ -1,31 +1,34 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require('cors');
+const cors = require("cors");
 
 const app = express();
-const PORT = 3000;
+
+// ⚠️ Railway NO usa tu puerto local. Lo asigna automáticamente.
+const PORT = process.env.PORT || 3000;
 
 // Middlewares
 app.use(cors());
 app.use(express.json());
 
-// Conexión a MongoDB usando la variable de entorno de Railway
+// ⚡ USAR LA VARIABLE DE ENTORNO DE RAILWAY
 const MONGO_URI = process.env.MONGO_URI;
 
-mongoose.connect(MONGO_URI)
+// Conectar a MongoDB (Railway)
+mongoose
+  .connect(MONGO_URI)
   .then(() => console.log("✅ Conectado a MongoDB en Railway"))
-  .catch(err => console.error("❌ Error al conectar a MongoDB:", err));
-
+  .catch((err) => console.error("❌ Error al conectar a MongoDB:", err));
 
 // Importar el modelo
 const Usuario = require("./models/usuario");
 
 // Ruta principal
 app.get("/", (req, res) => {
-  res.send("🚀 Servidor conectado a MongoDB Atlas");
+  res.send("🚀 API conectada a MongoDB en Railway");
 });
 
-// Crear un nuevo usuario (CREATE)
+// Crear un nuevo usuario
 app.post("/usuarios", async (req, res) => {
   try {
     const nuevoUsuario = new Usuario(req.body);
@@ -33,14 +36,14 @@ app.post("/usuarios", async (req, res) => {
 
     res.json({
       mensaje: "Usuario creado correctamente",
-      usuario: nuevoUsuario
+      usuario: nuevoUsuario,
     });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
-// Obtener todos los usuarios (READ)
+// Obtener todos los usuarios
 app.get("/usuarios", async (req, res) => {
   try {
     const usuarios = await Usuario.find();
@@ -51,7 +54,7 @@ app.get("/usuarios", async (req, res) => {
   }
 });
 
-// Obtener un usuario por ID (READ por ID)
+// Obtener un usuario por ID
 app.get("/usuarios/:id", async (req, res) => {
   try {
     const usuario = await Usuario.findById(req.params.id);
@@ -67,8 +70,8 @@ app.get("/usuarios/:id", async (req, res) => {
   }
 });
 
-// Actualizar un usuario por ID (UPDATE)
-app.put("/usuarios/:id", express.json(), async (req, res) => {
+// Actualizar un usuario
+app.put("/usuarios/:id", async (req, res) => {
   try {
     const { nombre, correo, edad } = req.body;
 
@@ -84,7 +87,7 @@ app.put("/usuarios/:id", express.json(), async (req, res) => {
 
     res.json({
       mensaje: "Usuario actualizado correctamente",
-      usuario: usuarioActualizado
+      usuario: usuarioActualizado,
     });
   } catch (error) {
     console.error(error);
@@ -92,7 +95,7 @@ app.put("/usuarios/:id", express.json(), async (req, res) => {
   }
 });
 
-// Eliminar un usuario por ID (DELETE)
+// Eliminar un usuario
 app.delete("/usuarios/:id", async (req, res) => {
   try {
     const usuarioEliminado = await Usuario.findByIdAndDelete(req.params.id);
@@ -103,9 +106,8 @@ app.delete("/usuarios/:id", async (req, res) => {
 
     res.json({
       mensaje: "Usuario eliminado correctamente",
-      usuario: usuarioEliminado
+      usuario: usuarioEliminado,
     });
-
   } catch (error) {
     console.error(error);
     res.status(500).send("Error al eliminar usuario");
@@ -114,8 +116,9 @@ app.delete("/usuarios/:id", async (req, res) => {
 
 // Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`Servidor Express escuchando en http://localhost:${PORT}`);
+  console.log(`🚀 Servidor escuchando en el puerto ${PORT}`);
 });
+
 
 
 
