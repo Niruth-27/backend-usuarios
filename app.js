@@ -4,31 +4,30 @@ const cors = require("cors");
 
 const app = express();
 
-// ⚠️ Railway NO usa tu puerto local. Lo asigna automáticamente.
+// Railway asigna el puerto automáticamente
 const PORT = process.env.PORT || 3000;
 
 // Middlewares
 app.use(cors());
 app.use(express.json());
 
-// ⚡ USAR LA VARIABLE DE ENTORNO DE RAILWAY
+// Conexión a MongoDB usando la variable de entorno de Railway
 const MONGO_URI = process.env.MONGO_URI;
 
-// Conectar a MongoDB (Railway)
-mongoose
-  .connect(MONGO_URI)
+mongoose.connect(MONGO_URI)
   .then(() => console.log("✅ Conectado a MongoDB en Railway"))
-  .catch((err) => console.error("❌ Error al conectar a MongoDB:", err));
+  .catch(err => console.error("❌ Error al conectar a MongoDB:", err));
+
 
 // Importar el modelo
 const Usuario = require("./models/usuario");
 
 // Ruta principal
 app.get("/", (req, res) => {
-  res.send("🚀 API conectada a MongoDB en Railway");
+  res.send("🚀 Servidor desplegado correctamente en Railway y conectado a MongoDB.");
 });
 
-// Crear un nuevo usuario
+// Crear un nuevo usuario (CREATE)
 app.post("/usuarios", async (req, res) => {
   try {
     const nuevoUsuario = new Usuario(req.body);
@@ -36,14 +35,14 @@ app.post("/usuarios", async (req, res) => {
 
     res.json({
       mensaje: "Usuario creado correctamente",
-      usuario: nuevoUsuario,
+      usuario: nuevoUsuario
     });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
-// Obtener todos los usuarios
+// Obtener todos los usuarios (READ)
 app.get("/usuarios", async (req, res) => {
   try {
     const usuarios = await Usuario.find();
@@ -65,19 +64,16 @@ app.get("/usuarios/:id", async (req, res) => {
 
     res.json(usuario);
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Error al buscar usuario por ID");
+    res.status(500).send("Error al buscar usuario");
   }
 });
 
-// Actualizar un usuario
+// Actualizar usuario
 app.put("/usuarios/:id", async (req, res) => {
   try {
-    const { nombre, correo, edad } = req.body;
-
     const usuarioActualizado = await Usuario.findByIdAndUpdate(
       req.params.id,
-      { nombre, correo, edad },
+      req.body,
       { new: true }
     );
 
@@ -87,15 +83,14 @@ app.put("/usuarios/:id", async (req, res) => {
 
     res.json({
       mensaje: "Usuario actualizado correctamente",
-      usuario: usuarioActualizado,
+      usuario: usuarioActualizado
     });
   } catch (error) {
-    console.error(error);
     res.status(500).send("Error al actualizar usuario");
   }
 });
 
-// Eliminar un usuario
+// Eliminar usuario
 app.delete("/usuarios/:id", async (req, res) => {
   try {
     const usuarioEliminado = await Usuario.findByIdAndDelete(req.params.id);
@@ -106,10 +101,9 @@ app.delete("/usuarios/:id", async (req, res) => {
 
     res.json({
       mensaje: "Usuario eliminado correctamente",
-      usuario: usuarioEliminado,
+      usuario: usuarioEliminado
     });
   } catch (error) {
-    console.error(error);
     res.status(500).send("Error al eliminar usuario");
   }
 });
