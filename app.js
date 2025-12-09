@@ -5,14 +5,14 @@ require("dotenv").config();
 
 const app = express();
 
-// Middleware CORS — PERMITE TODO
+// === CORS GLOBAL ===
 app.use(cors({
     origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type"]
 }));
 
-// TOP FIX EXTRA — por si Railway cachea
+// Middleware para asegurar headers CORS (Railway a veces cachea)
 app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
@@ -23,24 +23,19 @@ app.use((req, res, next) => {
 // Body parser
 app.use(express.json());
 
-// Railway asigna puerto automático
-const PORT = process.env.PORT || 3000;
-
-// Mongo URI desde Railway
+// === Conexión Mongo Railway ===
 const MONGO_URI = process.env.MONGO_URI;
 
-// Conectar a MongoDB
 mongoose.connect(MONGO_URI)
-    .then(() => console.log("✅ Conectado a MongoDB"))
-    .catch(err => console.error("❌ Error de conexión:", err));
+    .then(() => console.log("✅ MongoDB conectado"))
+    .catch(err => console.error("❌ Error Mongo:", err));
 
-// Modelo Usuario
+// Importar modelo
 const Usuario = require("./models/Usuario");
 
-// RUTAS ==============================
-
+// === Rutas ===
 app.get("/", (req, res) => {
-    res.send("🚀 Backend funcionando con CORS ACTIVO");
+    res.send("🚀 Backend funcionando con CORS habilitado");
 });
 
 app.get("/usuarios", async (req, res) => {
@@ -84,9 +79,10 @@ app.delete("/usuarios/:id", async (req, res) => {
     }
 });
 
-// Iniciar servidor
+// === Puerto Railway ===
+const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
     console.log(`🚀 Servidor encendido en puerto ${PORT}`);
 });
-
 
