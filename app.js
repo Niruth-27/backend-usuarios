@@ -1,74 +1,92 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
 
-// === CORS CONFIGURACIÓN ===
+// Middleware CORS — PERMITE TODO
 app.use(cors({
-    origin: "*",            // Permite cualquier origen
-    methods: "GET,POST,PUT,DELETE",
-    allowedHeaders: "Content-Type"
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type"]
 }));
 
-// === Middleware ===
+// TOP FIX EXTRA — por si Railway cachea
+app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    next();
+});
+
+// Body parser
 app.use(express.json());
 
-// === Conexión Mongo ===
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("MongoDB conectado"))
-    .catch(err => console.error("Error de Mongo:", err));
+// Railway asigna puerto automático
+const PORT = process.env.PORT || 3000;
 
-// === Modelo ===
-const Usuario = require('./Usuario');
+// Mongo URI desde Railway
+const MONGO_URI = process.env.MONGO_URI;
 
-// === Rutas ===
+// Conectar a MongoDB
+mongoose.connect(MONGO_URI)
+    .then(() => console.log("✅ Conectado a MongoDB"))
+    .catch(err => console.error("❌ Error de conexión:", err));
 
-// Obtener usuarios
-app.get('/usuarios', async (req, res) => {
+// Modelo Usuario
+const Usuario = require("./models/Usuario");
+
+// RUTAS ==============================
+
+app.get("/", (req, res) => {
+    res.send("🚀 Backend funcionando con CORS ACTIVO");
+});
+
+app.get("/usuarios", async (req, res) => {
     try {
         const usuarios = await Usuario.find();
         res.json(usuarios);
-    } catch (error) {
-        res.status(500).json({ error: "Error al obtener usuarios" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
-// Crear usuario
-app.post('/usuarios', async (req, res) => {
+app.post("/usuarios", async (req, res) => {
     try {
         const nuevo = new Usuario(req.body);
         await nuevo.save();
-        res.json({ mensaje: "Usuario creado correctamente" });
-    } catch (error) {
-        res.status(500).json({ error: "Error al crear usuario" });
+        res.json(nuevo);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
     }
 });
 
-// Editar usuario
-app.put('/usuarios/:id', async (req, res) => {
+app.put("/usuarios/:id", async (req, res) => {
     try {
-        await Usuario.findByIdAndUpdate(req.params.id, req.body);
-        res.json({ mensaje: "Usuario actualizado" });
-    } catch (error) {
-        res.status(500).json({ error: "Error al actualizar" });
+        const editado = await Usuario.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true }
+        );
+        res.json(editado);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
     }
 });
 
-// Eliminar usuario
-app.delete('/usuarios/:id', async (req, res) => {
+app.delete("/usuarios/:id", async (req, res) => {
     try {
-        await Usuario.findByIdAndDelete(req.params.id);
-        res.json({ mensaje: "Usuario eliminado" });
-    } catch (error) {
-        res.status(500).json({ error: "Error al eliminar" });
+        const eliminado = await Usuario.findByIdAndDelete(req.params.id);
+        res.json(eliminado);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
-// Puerto Railway
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
-
+// Iniciar servidor
+app.listen(PORT, () => {
+    console.log(`🚀 Servidor encendido en puerto ${PORT}`);
+});
 
 
