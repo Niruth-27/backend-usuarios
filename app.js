@@ -1,64 +1,60 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import cors from 'cors';
-import Usuario from './Usuario.js';
+// ====== IMPORTS ======
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
 
+// ====== CONFIGURACIONES ======
 const app = express();
+app.use(express.json());
 
-// ------------------------------
-// 🔥 CORS CONFIGURADO CORRECTAMENTE
-// ------------------------------
+// 🔥 CORS PERMITIENDO TODO — PARA QUE EL FRONTEND FUNCIONE
 app.use(cors({
-    origin: "*",   // si quieres puedes poner solo tu dominio del front
+    origin: "*",               // Permitir cualquier origen
     methods: "GET, POST, PUT, DELETE",
     allowedHeaders: "Content-Type"
 }));
 
-// Permite recibir JSON
-app.use(express.json());
+// ====== CONEXIÓN A MONGO ======
+const mongoUri = process.env.MONGO_URI;
 
-// ----------------------------
-// 📌 CONEXIÓN A MONGODB RAILWAY
-// ----------------------------
-const MONGO_URI = process.env.MONGO_URI;
+mongoose.connect(mongoUri)
+    .then(() => console.log("Conectado a MongoDB correctamente"))
+    .catch(err => console.error("Error al conectar a MongoDB:", err));
 
-mongoose.connect(MONGO_URI)
-  .then(() => console.log('MongoDB conectado correctamente'))
-  .catch(err => console.error('Error al conectar a MongoDB:', err));
-
-// ----------------------------
-// 📌 RUTA PARA CREAR USUARIO
-// ----------------------------
-app.post('/usuarios', async (req, res) => {
-    try {
-        const nuevo = new Usuario(req.body);
-        await nuevo.save();
-        res.json({ mensaje: "Usuario guardado correctamente", usuario: nuevo });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Error al guardar usuario" });
-    }
+// ====== SCHEMA & MODELO ======
+const UsuarioSchema = new mongoose.Schema({
+    nombre: String,
+    correo: String,
+    edad: Number
 });
 
-// ----------------------------
-// 📌 OBTENER TODOS LOS USUARIOS
-// ----------------------------
-app.get('/usuarios', async (req, res) => {
-    try {
-        const lista = await Usuario.find();
-        res.json(lista);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Error al obtener usuarios" });
-    }
+const Usuario = mongoose.model("Usuario", UsuarioSchema);
+
+// ====== RUTAS ======
+
+// GET TODOS LOS USUARIOS
+app.get("/usuarios", async (req, res) => {
+    const usuarios = await Usuario.find();
+    res.json(usuarios);
 });
 
-// ----------------------------
-// 📌 INICIAR SERVIDOR
-// ----------------------------
+// POST CREAR USUARIO
+app.post("/usuarios", async (req, res) => {
+    const usuario = new Usuario(req.body);
+    await usuario.save();
+    res.json({ mensaje: "Usuario guardado correctamente", usuario });
+});
+
+// DELETE ELIMINAR USUARIO
+app.delete("/usuarios/:id", async (req, res) => {
+    await Usuario.findByIdAndDelete(req.params.id);
+    res.json({ mensaje: "Usuario eliminado" });
+});
+
+// ====== INICIAR SERVIDOR ======
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Servidor escuchando correctamente en puerto ${PORT}`);
+    console.log(`Servidor escuchando en puerto ${PORT}`);
 });
 
 
