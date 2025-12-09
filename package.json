@@ -2,9 +2,9 @@
   "name": "mi-primer-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "app.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node app.js"
   },
   "keywords": [],
   "author": "",
@@ -15,4 +15,5 @@
     "mongoose": "^8.19.2"
   }
 }
+
 
