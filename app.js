@@ -8,8 +8,15 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middlewares
-app.use(cors());
+const corsOptions = {
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type"]
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
+
 
 // Conexión a MongoDB usando la variable de entorno de Railway
 const MONGO_URI = process.env.MONGO_URI;
