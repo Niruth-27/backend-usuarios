@@ -1,61 +1,74 @@
-// ====== IMPORTS ======
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+require('dotenv').config();
 
-// ====== CONFIGURACIONES ======
 const app = express();
-app.use(express.json());
 
-// 🔥 CORS PERMITIENDO TODO — PARA QUE EL FRONTEND FUNCIONE
+// === CORS CONFIGURACIÓN ===
 app.use(cors({
-    origin: "*",               // Permitir cualquier origen
-    methods: "GET, POST, PUT, DELETE",
+    origin: "*",            // Permite cualquier origen
+    methods: "GET,POST,PUT,DELETE",
     allowedHeaders: "Content-Type"
 }));
 
-// ====== CONEXIÓN A MONGO ======
-const mongoUri = process.env.MONGO_URI;
+// === Middleware ===
+app.use(express.json());
 
-mongoose.connect(mongoUri)
-    .then(() => console.log("Conectado a MongoDB correctamente"))
-    .catch(err => console.error("Error al conectar a MongoDB:", err));
+// === Conexión Mongo ===
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log("MongoDB conectado"))
+    .catch(err => console.error("Error de Mongo:", err));
 
-// ====== SCHEMA & MODELO ======
-const UsuarioSchema = new mongoose.Schema({
-    nombre: String,
-    correo: String,
-    edad: Number
+// === Modelo ===
+const Usuario = require('./Usuario');
+
+// === Rutas ===
+
+// Obtener usuarios
+app.get('/usuarios', async (req, res) => {
+    try {
+        const usuarios = await Usuario.find();
+        res.json(usuarios);
+    } catch (error) {
+        res.status(500).json({ error: "Error al obtener usuarios" });
+    }
 });
 
-const Usuario = mongoose.model("Usuario", UsuarioSchema);
-
-// ====== RUTAS ======
-
-// GET TODOS LOS USUARIOS
-app.get("/usuarios", async (req, res) => {
-    const usuarios = await Usuario.find();
-    res.json(usuarios);
+// Crear usuario
+app.post('/usuarios', async (req, res) => {
+    try {
+        const nuevo = new Usuario(req.body);
+        await nuevo.save();
+        res.json({ mensaje: "Usuario creado correctamente" });
+    } catch (error) {
+        res.status(500).json({ error: "Error al crear usuario" });
+    }
 });
 
-// POST CREAR USUARIO
-app.post("/usuarios", async (req, res) => {
-    const usuario = new Usuario(req.body);
-    await usuario.save();
-    res.json({ mensaje: "Usuario guardado correctamente", usuario });
+// Editar usuario
+app.put('/usuarios/:id', async (req, res) => {
+    try {
+        await Usuario.findByIdAndUpdate(req.params.id, req.body);
+        res.json({ mensaje: "Usuario actualizado" });
+    } catch (error) {
+        res.status(500).json({ error: "Error al actualizar" });
+    }
 });
 
-// DELETE ELIMINAR USUARIO
-app.delete("/usuarios/:id", async (req, res) => {
-    await Usuario.findByIdAndDelete(req.params.id);
-    res.json({ mensaje: "Usuario eliminado" });
+// Eliminar usuario
+app.delete('/usuarios/:id', async (req, res) => {
+    try {
+        await Usuario.findByIdAndDelete(req.params.id);
+        res.json({ mensaje: "Usuario eliminado" });
+    } catch (error) {
+        res.status(500).json({ error: "Error al eliminar" });
+    }
 });
 
-// ====== INICIAR SERVIDOR ======
+// Puerto Railway
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor escuchando en puerto ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
 
 
 
