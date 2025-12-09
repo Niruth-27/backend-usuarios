@@ -18,9 +18,8 @@ mongoose.connect(MONGO_URI)
   .then(() => console.log("✅ Conectado a MongoDB en Railway"))
   .catch(err => console.error("❌ Error al conectar a MongoDB:", err));
 
-
 // Importar el modelo
-const Usuario = require("./models/usuario");
+const Usuario = require("./models/Usuario");
 
 // Ruta principal
 app.get("/", (req, res) => {
@@ -53,7 +52,7 @@ app.get("/usuarios", async (req, res) => {
   }
 });
 
-// Obtener un usuario por ID
+// Obtener un usuario por ID (READ por ID)
 app.get("/usuarios/:id", async (req, res) => {
   try {
     const usuario = await Usuario.findById(req.params.id);
@@ -68,7 +67,7 @@ app.get("/usuarios/:id", async (req, res) => {
   }
 });
 
-// Actualizar usuario
+// Actualizar usuario (UPDATE)
 app.put("/usuarios/:id", async (req, res) => {
   try {
     const usuarioActualizado = await Usuario.findByIdAndUpdate(
@@ -90,7 +89,7 @@ app.put("/usuarios/:id", async (req, res) => {
   }
 });
 
-// Eliminar usuario
+// Eliminar usuario (DELETE)
 app.delete("/usuarios/:id", async (req, res) => {
   try {
     const usuarioEliminado = await Usuario.findByIdAndDelete(req.params.id);
